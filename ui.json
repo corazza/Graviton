@@ -1,0 +1,12 @@
+{
+    "save":
+    {
+        "id": "a",
+        "type": "button",
+        "event": "save",
+        "x": 10,
+        "y": 10,
+        "inactive": "save.png",
+        "active": "save2.png"
+    }
+}

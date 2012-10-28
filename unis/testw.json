@@ -1,0 +1,49 @@
+{
+    "bodies": 
+    {
+        "earth":
+        {
+            "name": "Earth",
+            "color": "earth",
+            "m": 5.97219e+24,
+            "r": 6378100.0,
+            "velocity": {"y": 0, "x": 0},
+            "position": {"y": 0, "x": 0}
+        },
+        
+        "moon":
+        {
+            "name": "Moon",
+            "color": "moon",
+            "m": 7.34767309e+22,
+            "r": 1.7374e+6,
+            "velocity": {"y": 1023, "x": 0},
+            "position": {"y": 0, "x": 3.84e+8}
+        },
+
+        "mars":
+        {
+            "name": "Mars",
+            "color": "mars",
+            "m": 6.41693e+23,
+            "r": 3.397e+6,
+            "velocity": {"y": 900, "x": 0},
+            "position": {"y": 0, "x": 1.82e+8}
+        },
+
+        "mars2":
+        {
+            "name": "Mars",
+            "color": "mars",
+            "m": 6.41693e+23,
+            "r": 3.397e+6,
+            "velocity": {"y": -900, "x": 0},
+            "position": {"y": 0, "x": -1.82e+8}
+        }
+    },
+    
+    "name": "testw",
+    "G": 6.673e-11,
+    "time": 876.9939999993475
+}
+

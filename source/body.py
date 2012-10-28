@@ -9,6 +9,7 @@ class Body:
         
         self.position = Vector2(0, 0)
         self.velocity = Vector2(0, 0)
+        self.force = Vector2(0, 0)
         
     def desc(self):
         body = {
@@ -17,7 +18,7 @@ class Body:
             "r": self.r,
             "color": self.color,
             "position": self.position.desc(),
-            "velocity": self.velocity.desc()
+            "velocity": self.velocity.desc(),
         }
     
         return body
