@@ -10,7 +10,6 @@ class FileManager:
         
     def saveUni(self, uni):
         """Read the name and all important state vars, create a JSON file in ../unis with uni.name as the filename, and save the state there."""
-        print "File manager: saving uni with name " + uni.name + "."
 
         desc = json.dumps(uni.desc())
         
@@ -18,10 +17,10 @@ class FileManager:
 
     def loadUni(self, filename):
         """Read the JSON file specified by filename, create a uni, return the uni."""
-        print "File manager: loading uni " + filename + "."
         
         desc = json.loads(open(self.unisf + filename + ".json", "r").read())
         uni = Uni(desc["name"], desc["G"], desc["time"])
+        uni.description = desc["description"]
 
         for bid in desc["bodies"]:
             d = desc["bodies"][bid]

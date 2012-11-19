@@ -10,6 +10,7 @@ class Uni:
         self.G = G
         self.time = time
         
+        self.description = "Universe."
         self.bodies = {}
        
     def addBody (self, body, bid):
@@ -30,7 +31,8 @@ class Uni:
             "name": self.name,
             "G": self.G,
             "time": self.time,
-            "bodies": {bid: body.desc() for bid, body in self.bodies.iteritems()}
+            "bodies": {bid: body.desc() for bid, body in self.bodies.iteritems()},
+            "description": self.description
         }
         
         return uni
@@ -42,7 +44,8 @@ class Uni:
         b = abs(b1.position.y - b2.position.y)
  
         r = math.sqrt(a*a + b*b)
-        fg = self.G * b1.m * b2.m / pow(r, 2)
+        
+        fg = (self.G * b1.m * b2.m) / pow(r, 2)
         
         return Vector2(a/r * fg, b/r * fg)
         
