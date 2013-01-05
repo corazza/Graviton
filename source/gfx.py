@@ -1,4 +1,5 @@
 import pygame
+import math
 
 import vector2 as v
 import ui as uim
@@ -8,11 +9,47 @@ class Camera:
     def __init__(self, x = 0, y = 0):
         self.position = v.Vector2(x, y)
         
-        self.velocity = v.Vector2()
         self.direction = 0
         self.zoom = 1
         self.zooming = 1
         self.centered = False
+        
+    def determineDirection(self, w, a, s, d):
+        self.direction = 0
+        moving = True
+        
+        if w:
+            self.direction = 0
+            
+            if a:
+                self.direction = -45
+                
+            elif d:
+                self.direction = -315
+
+        elif a:
+            self.direction = -90
+            
+            if s:
+                self.direction = -135
+
+        elif s:
+            self.direction = -180
+            
+            if d:
+                self.direction = -225
+
+        elif d:
+            self.direction = -270
+            
+        else:
+            moving = False
+
+        self.direction += 360 - 90
+
+        self.direction = 2 * math.pi * self.direction / 360
+
+        return moving        
         
     def center(self, body):
         self.centered = body

@@ -63,15 +63,16 @@ r.scale = ps
 run = True
 last = time.time()
 
+
+#<UI updates>
 def update_time_info(el):
     el.setText("Time: " + str(int(uni.time/60/60)) + "h.")
 
-def update_zoom_info(el):
-    el.setText("Zoom: " + str(camera.zoom) + ".")
-    
 def set_desc(el):
     el.setText(uni.description)
     el.x = x/2 - el.w/2
+#</ui updates>
+
 
 ui.addSetter("desc", set_desc)
 ui.addUpdate("time", update_time_info)
@@ -124,7 +125,7 @@ event.sub("save", save)
 
 
 #<setup>
-
+z = 0
 #</setup>
 
 
@@ -139,7 +140,7 @@ while run:
         dt = cdt
     
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             run = False
 
         if event.type == MOUSEBUTTONDOWN:
@@ -194,39 +195,41 @@ while run:
 
                 
         if event.type == KEYDOWN and event.key == K_w:
-            camera.velocity.y += -cs/camera.zoom
+            keys["w"] = True
             
         if event.type == KEYDOWN and event.key == K_a:
-            camera.velocity.x += -cs/camera.zoom
+            keys["a"] = True
 
         if event.type == KEYDOWN and event.key == K_s:
-            camera.velocity.y += cs/camera.zoom
+            keys["s"] = True
         
         if event.type == KEYDOWN and event.key == K_d:
-            camera.velocity.x += cs/camera.zoom
+            keys["d"] = True
         
 
         if event.type == KEYUP and event.key == K_w:
-            camera.velocity.y += cs/camera.zoom
+            keys["w"] = False
             
         if event.type == KEYUP and event.key == K_a:
-            camera.velocity.x += cs/camera.zoom
+            keys["a"] = False
 
         if event.type == KEYUP and event.key == K_s:
-            camera.velocity.y += -cs/camera.zoom
+            keys["s"] = False
         
         if event.type == KEYUP and event.key == K_d:
-            camera.velocity.x += -cs/camera.zoom
-
+            keys["d"] = False
+            
 
     if keys["e"]:
-        camera.zoom += zcps*camera.zoom*dt - camera.zoom*dt
+        camera.zoom *= zcps ** dt
         
     if keys["q"]:
-        camera.zoom -= zcps*camera.zoom*dt - camera.zoom*dt
-
-    camera.position.x += camera.velocity.x * dt
-    camera.position.y += camera.velocity.y * dt
+        camera.zoom /= zcps ** dt
+        
+    if camera.determineDirection(keys["w"], keys["a"], keys["s"], keys["d"]):
+        factor =  cs * dt / camera.zoom
+        camera.position.x += math.cos(camera.direction) * factor
+        camera.position.y += math.sin(camera.direction) * factor
 
     uni.update(dt*dts)
     r.render(uni, ui)

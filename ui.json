@@ -17,14 +17,6 @@
         "update": "time"
     },
     
-    "zoom":
-    {
-        "type": "text",
-        "x": 200,
-        "y": 50,
-        "update": "zoom"
-    },
-    
     "desc":
     {
         "type": "text",
