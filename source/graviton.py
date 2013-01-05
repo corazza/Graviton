@@ -17,6 +17,8 @@ from body import *
 if len(sys.argv) < 2:
     raise Exception("World name not given!")
 
+
+
 #<settings>
 config = ConfigParser.RawConfigParser()
 config.read("settings.ini")
@@ -31,6 +33,7 @@ ps = config.getint("prog", "ps")
 ui_path = config.get("prog", "ui")
 cs = config.getint("prog", "cs")
 zoom = config.getfloat("prog", "zoom")
+zcps = config.getfloat("prog", "zcps") #Zoom change per second
 #</settings>
 
 
@@ -54,16 +57,54 @@ r = gfx.Renderer(screen, pygame, camera)
 uni = m.loadUni(sys.argv[1])
 ui = uim.UI(uni, camera)
 
-#camera.center(uni.bodies["earth"])
 camera.zoom = zoom
 r.scale = ps
 
 run = True
 last = time.time()
 
+def update_time_info(el):
+    el.setText("Time: " + str(int(uni.time/60/60)) + "h.")
+
+def update_zoom_info(el):
+    el.setText("Zoom: " + str(camera.zoom) + ".")
+    
+def set_desc(el):
+    el.setText(uni.description)
+    el.x = x/2 - el.w/2
+
+ui.addSetter("desc", set_desc)
+ui.addUpdate("time", update_time_info)
+ui.addUpdate("zoom", update_zoom_info)
+
 ui.load(open("ui.json", "r").read(), ui_path)
 
-#image_surf = pygame.image.load("myimage.bmp").convert()
+tick.Interval(ui.update, 0.1)
+
+
+infoEnabled = True
+
+def disableInfo():
+    global infoEnabled
+    infoEnabled = False
+    ui.getElement("time").disable()
+    ui.getElement("zoom").disable()
+    
+def enableInfo():
+    global infoEnabled
+    infoEnabled = True
+    ui.getElement("time").enable()
+    ui.getElement("zoom").enable()
+
+
+keys = {
+    "e": False,
+    "q": False,
+    "w": False,
+    "a": False,
+    "s": False,
+    "d": False,
+}
 #</init>
 
 
@@ -81,45 +122,14 @@ event.sub("save", save)
 #</events>
 
 
+
 #<setup>
-def update_info():
-    time_info.setText("Time: " + str(int(uni.time/60/60)) + "h.")
 
-infoEnabled = True
-
-def disableInfo():
-    global infoEnabled
-    infoEnabled = False
-    time_info.disable()
-    description.disable()
-    
-def enableInfo():
-    global infoEnabled
-    infoEnabled = True
-    time_info.enable()
-    description.enable()
-
-
-
-time_info = uim.Text(200, 20)
-description = uim.Text(x/2, 20)
-description.setText(uni.description)
-description.x -= description.w/2
-
-
-update_info()
-
-ui.addElement(time_info, "time")
-ui.addElement(description, "description")
-
-tick.Interval(update_info, 0.1)
 #</setup>
 
-#<main>
 
-# 3. On planet click, center on that planet and begin displaying info on it.
-# > On space click, release the camera and stop displaying info on the planet (also release on c).
-# 4. Statistics and improved integration.
+
+#<main>
 
 while run:
     if vardt:
@@ -162,14 +172,17 @@ while run:
             camera.position.y = 0
             
 
-        if event.type == KEYUP and (event.key == K_q or event.key == K_e):
-            camera.zooming = 1
-
         if event.type == KEYDOWN and event.key == K_q:
-            camera.zooming = 1.01
+            keys["q"] = True
 
         if event.type == KEYDOWN and event.key == K_e:
-            camera.zooming = 0.99
+            keys["e"] = True
+
+        if event.type == KEYUP and event.key == K_q:
+            keys["q"] = False
+
+        if event.type == KEYUP and event.key == K_e:
+            keys["e"] = False
 
 
         if event.type == KEYUP and event.key == K_u:
@@ -206,9 +219,14 @@ while run:
             camera.velocity.x += -cs/camera.zoom
 
 
+    if keys["e"]:
+        camera.zoom += zcps*camera.zoom*dt - camera.zoom*dt
+        
+    if keys["q"]:
+        camera.zoom -= zcps*camera.zoom*dt - camera.zoom*dt
+
     camera.position.x += camera.velocity.x * dt
     camera.position.y += camera.velocity.y * dt
-    camera.zoom *= camera.zooming
 
     uni.update(dt*dts)
     r.render(uni, ui)
