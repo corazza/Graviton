@@ -9,9 +9,9 @@ from pygame.locals import *
 import gfx
 import fileManager
 import ui as uim
-import event
+import event as gevent
 import tick
-
+import util
 from body import *
 
 if len(sys.argv) < 2:
@@ -20,6 +20,8 @@ if len(sys.argv) < 2:
 
 
 #<settings>
+
+#defaults:
 config = ConfigParser.RawConfigParser()
 config.read("settings.ini")
 
@@ -34,6 +36,61 @@ ui_path = config.get("prog", "ui")
 cs = config.getint("prog", "cs")
 zoom = config.getfloat("prog", "zoom")
 zcps = config.getfloat("prog", "zcps") #Zoom change per second
+
+#command line args:
+runFor = -1 #Run for x seconds, -1 = run forever.
+mini = False #The minimal version of Graviton should be running.
+alt_name = -1 #Save the simulation in an alternative file, without modifying the original, -1 = use the original name.
+save_sim_each = -1 #Save the simulation each x updates, 0 = no automatic saving, 1 = save each update.
+
+found_cdt = False
+
+for i in range(len(sys.argv)):
+    arg = sys.argv[i]
+
+    if arg == "-t":
+        if i + 1 < len(sys.argv):
+            runFor = float(sys.argv[i+1])
+            print "The simulation will be running until " + util.getDate(runFor) + "."
+        else:
+            raise Exception("Parameter for '-t' not given! It must be a float following '-t', eg. '-t 200000.2432'.")
+    
+    if arg == "-f":
+        if i + 1 < len(sys.argv):
+            alt_name = sys.argv[i+1]
+            print "Using alternative name \"" + alt_name + "\" for saving."
+        else:
+            raise Exception("Parameter for '-f' not given! It must be a string following '-f', eg. '-t alternative_name'.")
+
+    if arg == "-s":
+        if i + 1 < len(sys.argv):
+            save_sim_each = int(sys.argv[i+1])
+            print "The simulation will be saved each " + str(save_sim_each) + " universe updates."
+        else:
+            raise Exception("Parameter for '-s' not given! It must be an integer following '-s', eg. '-s 20'.")
+            
+    if arg == "-dts":
+        if i + 1 < len(sys.argv) and not found_cdt:
+            dts = float(sys.argv[i+1])
+            print "Running the simulation with a delta-time scale of " + str(dts) + "."
+        elif found_cdt:
+            dts = 1
+            print "WARNING: cannot set a non-one delta-time scale if constant delta-time is set."
+            print "Delta-time scale set to 1."
+        else:
+            raise Exception("Parameter for '-dts' not given! It must be a float following '-dts', eg. '-dts 20000.123'.")
+
+    if arg == "-cdt":
+        if i + 1 < len(sys.argv):
+            cdt = float(sys.argv[i+1])
+            vardt = False
+            found_cdt = True
+            dts = 1
+            print "Running the simulation with a constant delta-time of " + str(cdt) + " seconds."
+            print "Delta-time scale set to 1."
+        else:
+            raise Exception("Parameter for '-cdt' not given! It must be a float following '-cdt', eg. '-cdt 10.0'.")
+            
 #</settings>
 
 
@@ -62,7 +119,7 @@ r.scale = ps
 
 run = True
 last = time.time()
-
+start = time.time()
 
 #<UI updates>
 def update_time_info(el):
@@ -76,7 +133,6 @@ def set_desc(el):
 
 ui.addSetter("desc", set_desc)
 ui.addUpdate("time", update_time_info)
-ui.addUpdate("zoom", update_zoom_info)
 
 ui.load(open("ui.json", "r").read(), ui_path)
 
@@ -106,6 +162,8 @@ keys = {
     "s": False,
     "d": False,
 }
+
+last_saved = 0 #How many updates went by since the last save?
 #</init>
 
 
@@ -117,28 +175,26 @@ keys = {
 
 #<events>
 def save():
-    m.saveUni(uni)
+    m.saveUni(uni, alt_name)
 
-event.sub("save", save)
+gevent.sub("save", save)
 #</events>
 
 
 
 #<setup>
-z = 0
 #</setup>
 
 
 
 #<main>
 
+#1. Check whether my time-keeping makes any sense or whether it causes errors.
+
 while run:
-    if vardt:
-        dt = time.time() - last
-        last = time.time()
-    else:
-        dt = cdt
-    
+    dt = time.time() - last
+    last = time.time()
+        
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             run = False
@@ -231,9 +287,26 @@ while run:
         camera.position.x += math.cos(camera.direction) * factor
         camera.position.y += math.sin(camera.direction) * factor
 
-    uni.update(dt*dts)
+    #If variable delta-time is set:
+    if vardt:
+        uni.update(dt*dts)
+    else: #Else forward in time by some constant.
+        uni.update(cdt)
+        
     r.render(uni, ui)
     tick.check()
+    
+    #The update is considered to be done.
 
+    if runFor > -1:
+        if runFor < uni.time:
+            run = False
+
+    if save_sim_each > 0:
+        last_saved += 1
+
+        if last_saved >= save_sim_each:
+            last_saved = 0
+            gevent.pub("save")
 #</main>
 

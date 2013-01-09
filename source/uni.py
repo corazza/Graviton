@@ -1,3 +1,15 @@
+"""
+Simulates a universe.
+
+Measurement units:
+
+[time] = s
+[distance] = m
+[mass] = kg
+[velocity] = ms^-1
+[acceleration] = ms^-2
+"""
+
 import math
 from itertools import combinations
 
@@ -14,10 +26,12 @@ class Uni:
         self.bodies = {}
        
     def addBody (self, body, bid):
+        """Adds a body to the universe."""
         body.id = bid
         self.bodies[bid] = body
         
     def removeBody (self, bid):
+        """Removes a body with body id 'bid' from the universe."""
         pl = len(self.bodies)
         self.bodies = {bid: body for bid, body in self.bodies.iteritems() if body.id != bid}
         
@@ -27,6 +41,7 @@ class Uni:
             return False
 
     def desc (self):
+        """Describes the universe (in a dictionary format) so that it can be saved to a JSON file."""
         uni = {
             "name": self.name,
             "G": self.G,
@@ -51,6 +66,8 @@ class Uni:
         
 
     def update (self, dt):
+        """Pushes the uni 'dt' seconds forward in time."""
+    
         self.time += dt
         
         for b1, b2 in combinations(self.bodies.values(), 2):

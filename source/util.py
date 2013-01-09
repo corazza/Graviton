@@ -37,4 +37,9 @@ def lengthToWorld(l, camera):
     
 def lengthToScreen(l, camera):
     return l*camera.zoom
+
+def getDate(seconds):
+    #Calculate the date offset from 2006-Mar-13 17:30:59
     
+    return "NOTIMPLEMENTED2006-Mar-13 17:30:59"
+

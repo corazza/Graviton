@@ -8,12 +8,15 @@ class FileManager:
     def __init__(self, unisf):
         self.unisf = unisf
         
-    def saveUni(self, uni):
+    def saveUni(self, uni, alt_name):
         """Read the name and all important state vars, create a JSON file in ../unis with uni.name as the filename, and save the state there."""
 
         desc = json.dumps(uni.desc())
         
-        open(self.unisf + uni.name + ".json", "w").write(desc)
+        if alt_name == -1:
+            open(self.unisf + uni.name + ".json", "w").write(desc)
+        else:
+            open(self.unisf + alt_name + ".json", "w").write(desc)            
 
     def loadUni(self, filename):
         """Read the JSON file specified by filename, create a uni, return the uni."""
