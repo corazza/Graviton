@@ -1,3 +1,4 @@
+import os
 import json
 
 from uni import *
@@ -5,25 +6,39 @@ from body import *
 from vector2 import *
 
 class FileManager:
-    def __init__(self, unisf):
-        self.unisf = unisf
+    def __init__(self, unisdir):
+        self.unisdir = unisdir
         
     def saveUni(self, uni, alt_name):
         """Read the name and all important state vars, create a JSON file in ../unis with uni.name as the filename, and save the state there."""
 
         desc = json.dumps(uni.desc())
-        
-        if alt_name == -1:
-            open(self.unisf + uni.name + ".json", "w").write(desc)
-        else:
-            open(self.unisf + alt_name + ".json", "w").write(desc)            
 
-    def loadUni(self, filename):
+        if alt_name == -1: #Overwrite the original file.
+            open(self.unisdir + uni.name + ".json", "w").write(desc)
+
+        elif alt_name == -2: #Use a dedicated directory and a new file.
+            directory = self.unisdir + uni.name + "/"
+            
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+            open(directory + uni.getDate() + ".json", "w").write(desc)            
+
+        else: #Use a new file name.
+            open(self.unisdir + alt_name + ".json", "w").write(desc)            
+
+    def load(self, filename):
         """Read the JSON file specified by filename, create a uni, return the uni."""
         
-        desc = json.loads(open(self.unisf + filename + ".json", "r").read())
+        desc = json.loads(open(filename, "r").read())
         uni = Uni(desc["name"], desc["G"], desc["time"])
         uni.description = desc["description"]
+        
+        if desc.has_key("datatime"):
+            uni.datatime = desc["datatime"] #UNIX time at which the data was acquired.
+        else:
+            uni.datatime = "N/A"
 
         for bid in desc["bodies"]:
             d = desc["bodies"][bid]
@@ -35,4 +50,27 @@ class FileManager:
             uni.addBody(body, bid)
         
         return uni
+            
+    def cnt(self, name):
+        
+        filename = self.unisdir + name + "/"
+        
+        od = os.getcwd()
+        
+        os.chdir(filename)
+        filelist = os.listdir(os.getcwd())
+        filelist = filter(lambda x: not os.path.isdir(x), filelist)
+        
+        filename += max(filelist, key=lambda x: os.stat(x).st_mtime)
+        
+        os.chdir(od)
+
+        return self.load(filename)
+
+    def loadUni(self, name):
+        """Read the JSON file specified by filename, create a uni, return the uni."""
+        
+        filename = self.unisdir + name + ".json"
+        
+        return self.load(filename)
         

@@ -11,6 +11,8 @@ Measurement units:
 """
 
 import math
+import time
+import random
 from itertools import combinations
 
 import body
@@ -40,6 +42,12 @@ class Uni:
         else:
             return False
 
+    def getDate(self):
+        if self.datatime != "N/A":
+            return time.asctime(time.localtime(self.datatime + self.time))
+        else:
+            return "When did I start?" + str(random.random())
+        
     def desc (self):
         """Describes the universe (in a dictionary format) so that it can be saved to a JSON file."""
         uni = {
@@ -47,7 +55,8 @@ class Uni:
             "G": self.G,
             "time": self.time,
             "bodies": {bid: body.desc() for bid, body in self.bodies.iteritems()},
-            "description": self.description
+            "description": self.description,
+            "datatime": self.datatime
         }
         
         return uni
