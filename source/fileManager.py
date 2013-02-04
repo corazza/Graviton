@@ -8,7 +8,7 @@ from vector2 import *
 class FileManager:
     def __init__(self, unisdir):
         self.unisdir = unisdir
-        
+
     def saveUni(self, uni, alt_name):
         """Read the name and all important state vars, create a JSON file in ../unis with uni.name as the filename, and save the state there."""
 
@@ -19,22 +19,22 @@ class FileManager:
 
         elif alt_name == -2: #Use a dedicated directory and a new file.
             directory = self.unisdir + uni.name + "/"
-            
+
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            open(directory + uni.getDate() + ".json", "w").write(desc)            
+            open(directory + uni.getDate() + ".json", "w").write(desc)
 
         else: #Use a new file name.
-            open(self.unisdir + alt_name + ".json", "w").write(desc)            
+            open(self.unisdir + alt_name + ".json", "w").write(desc)
 
     def load(self, filename):
         """Read the JSON file specified by filename, create a uni, return the uni."""
-        
+
         desc = json.loads(open(filename, "r").read())
         uni = Uni(desc["name"], desc["G"], desc["time"])
         uni.description = desc["description"]
-        
+
         if desc.has_key("datatime"):
             uni.datatime = desc["datatime"] #UNIX time at which the data was acquired.
         else:
@@ -48,29 +48,41 @@ class FileManager:
             body.velocity = Vector2(d["velocity"]["x"], d["velocity"]["y"])
 
             uni.addBody(body, bid)
-        
+
         return uni
-            
+
+    def delSaves(self, name):
+        """Called when the -fe option is on, but the -cnt is not."""
+        dire = self.unisdir + name + "/"
+
+        for dfile in os.listdir(dire):
+            file_path = os.path.join(dire, dfile)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception, e:
+                print e
+
     def cnt(self, name):
-        
+
         filename = self.unisdir + name + "/"
-        
+
         od = os.getcwd()
-        
+
         os.chdir(filename)
         filelist = os.listdir(os.getcwd())
         filelist = filter(lambda x: not os.path.isdir(x), filelist)
-        
+
         filename += max(filelist, key=lambda x: os.stat(x).st_mtime)
-        
+
         os.chdir(od)
 
         return self.load(filename)
 
     def loadUni(self, name):
         """Read the JSON file specified by filename, create a uni, return the uni."""
-        
+
         filename = self.unisdir + name + ".json"
-        
+
         return self.load(filename)
-        
+

@@ -37,11 +37,11 @@ found_tu = False
 
 for i in range(len(sys.argv)):
     arg = sys.argv[i]
-    
+
     if arg == "-se":
         save_at_exit = True
         print "When the simulation is over it will save itself."
-    
+
     if arg == "-cnt":
         print "Will attempt to continue from the last save file (created by the -fe flag)."
         cnt = True
@@ -79,7 +79,7 @@ for i in range(len(sys.argv)):
             print "There will be a report each " + str(report_each) + " real time seconds."
         else:
             raise Exception("Parameter for '-r' not given! It must be a float following '-r', eg. '-t 120.5'.")
-    
+
     if arg == "-f":
         if i + 1 < len(sys.argv) and not set_fe:
             alt_name = sys.argv[i+1]
@@ -100,7 +100,7 @@ for i in range(len(sys.argv)):
             print "The simulation will be saved each " + str(save_sim_each) + " universe updates."
         else:
             raise Exception("Parameter for '-s' not given! It must be an integer following '-s', eg. '-s 20'.")
-            
+
     if arg == "-dts":
         if i + 1 < len(sys.argv) and not found_cdt and not mini:
             dts = float(sys.argv[i+1])
@@ -111,7 +111,7 @@ for i in range(len(sys.argv)):
             dts = 1
             if found_cdt:
                 print "WARNING: cannot set a non-one delta-time scale if constant delta-time is set."
-            
+
             if mini:
                 print "WARNING: cannot set a non-one delta-time scale if min mode is on. Use -cdt <float> to set a constant delta-time."
 
@@ -134,6 +134,7 @@ for i in range(len(sys.argv)):
 print
 #</command line arguments>
 
+#Effects imports:
 if not mini:
     import pygame
     from pygame.locals import *
@@ -152,6 +153,7 @@ dts = dts or config.getfloat("sim", "dts") #Delta-time scale (2 means that the s
 cdt = cdt or config.getfloat("sim", "cdt") #Constant delta-time (better perfrmace, poorer presentation).
 unidir = os.getcwd() + "/" + config.get("prog", "unidir")
 
+#Effects settings:
 if not mini:
     x = config.getint("prog", "x")
     y = config.getint("prog", "y")
@@ -181,6 +183,11 @@ manager = fileManager.FileManager(unidir)
 
 if not cnt:
     uni = manager.loadUni(sys.argv[1])
+
+    if alt_name == -2:
+        print "WARNING: Deleting previous saves of " + sys.argv[1] + "."
+        manager.delSaves(sys.argv[1]);
+
 else:
     uni = manager.cnt(sys.argv[1])
 
@@ -225,7 +232,7 @@ if not mini:
         infoEnabled = False
         ui.getElement("time").disable()
         ui.getElement("zoom").disable()
-        
+
     def enableInfo():
         global infoEnabled
         infoEnabled = True
@@ -240,7 +247,7 @@ if not mini:
         "s": False,
         "d": False,
     }
-    
+
 #</init>
 
 
@@ -254,10 +261,10 @@ if not mini:
 def save():
     print "Saving."
     manager.saveUni(uni, alt_name)
-    
+
 def report():
     will = -1 #Nothing specified.
-    
+
     if runForR > -1:
         has = (time.time() - start) #Has been running for / real seconds.
         will = runForR - lasted #Will be running for / real seconds.
@@ -278,7 +285,7 @@ def report():
 
         has = str(has) + " real seconds"
         will = str(will) + " real seconds"
-    
+
     print " --- This is an automatic status report. --- "
     print "The simulation started at date " + time.asctime(time.localtime(start)) + "."
 
@@ -295,18 +302,17 @@ def report():
         print "Constant delta-time:", cdt
     print
     print
-    
+
 
 gevent.sub("report", report)
 gevent.sub("save", save)
 #</events>
 
 
-
 #<functions>
 def pygUpdate():
     run = True
-    
+
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             run = False
@@ -339,7 +345,7 @@ def pygUpdate():
         if event.type == KEYUP and event.key == K_c:
             camera.position.x = 0
             camera.position.y = 0
-            
+
 
         if event.type == KEYDOWN and event.key == K_q:
             keys["q"] = True
@@ -361,44 +367,44 @@ def pygUpdate():
                 ui.enable()
 
 
-                
+
         if event.type == KEYDOWN and event.key == K_w:
             keys["w"] = True
-            
+
         if event.type == KEYDOWN and event.key == K_a:
             keys["a"] = True
 
         if event.type == KEYDOWN and event.key == K_s:
             keys["s"] = True
-        
+
         if event.type == KEYDOWN and event.key == K_d:
             keys["d"] = True
-        
+
 
         if event.type == KEYUP and event.key == K_w:
             keys["w"] = False
-            
+
         if event.type == KEYUP and event.key == K_a:
             keys["a"] = False
 
         if event.type == KEYUP and event.key == K_s:
             keys["s"] = False
-        
+
         if event.type == KEYUP and event.key == K_d:
             keys["d"] = False
-            
+
 
     if keys["e"]:
         camera.zoom *= zcps ** dt
-        
+
     if keys["q"]:
         camera.zoom /= zcps ** dt
-        
+
     if camera.determineDirection(keys["w"], keys["a"], keys["s"], keys["d"]):
         factor =  cs * dt / camera.zoom
         camera.position.x += math.cos(camera.direction) * factor
         camera.position.y += math.sin(camera.direction) * factor
-        
+
     renderer.render(uni, ui)
     return run
 
@@ -413,8 +419,7 @@ report()
 
 #<main>
 
-#1. Implement continuation when using multiple-files saving scheme.
-#2. Mathematically enhance the Uni class.
+#1. Mathematically enhance the Uni class.
 
 while run:
     #If variable delta-time is set:
@@ -426,7 +431,7 @@ while run:
     if not mini:
         run = pygUpdate()
         tick.check()
-    
+
     #The update is considered to be done.
 
     if save_sim_each > 0:
@@ -435,14 +440,14 @@ while run:
         if last_saved >= save_sim_each:
             last_saved = 0
             save()
-            
+
     if report_each > 0:
         last_reported += dt
-        
+
         if last_reported >= report_each:
             last_reported = 0
             report()
-        
+
     if runForU > -1:
         if runForU <= uni.time:
             run = False
@@ -450,16 +455,15 @@ while run:
     elif runForR > -1:
         if runForR <= lasted:
             run = False
-            
+
     dt = time.time() - last
     last = time.time()
     lasted += dt
 #</main>
 
-print "The simulation ended."
+print "The simulation has ended."
 print
 report()
 
 if save_at_exit:
     save()
-
