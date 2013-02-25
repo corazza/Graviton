@@ -8,6 +8,11 @@ import event as gevent
 import util
 from body import *
 
+
+
+
+
+
 #<command line arguments>
 if len(sys.argv) < 2:
     raise Exception("World name not given!")
@@ -32,6 +37,7 @@ save_at_exit = False
 
 #tmp
 found_cdt = False
+found_dts = False
 found_tr = False
 found_tu = False
 
@@ -96,14 +102,15 @@ for i in range(len(sys.argv)):
 
     if arg == "-s":
         if i + 1 < len(sys.argv):
-            save_sim_each = int(sys.argv[i+1])
-            print "The simulation will be saved each " + str(save_sim_each) + " universe updates."
+            save_sim_each = float(sys.argv[i+1])
+            print "The simulation will be saved each " + str(save_sim_each) + " universe seconds."
         else:
             raise Exception("Parameter for '-s' not given! It must be an integer following '-s', eg. '-s 20'.")
 
     if arg == "-dts":
         if i + 1 < len(sys.argv) and not found_cdt and not mini:
             dts = float(sys.argv[i+1])
+            found_dts = True
             print "Running the simulation with a delta-time scale of " + str(dts) + "."
             print "WARNING: delta-time is variable."
 
@@ -134,6 +141,13 @@ for i in range(len(sys.argv)):
 print
 #</command line arguments>
 
+
+
+
+
+
+
+
 #Effects imports:
 if not mini:
     import pygame
@@ -149,8 +163,13 @@ config = ConfigParser.RawConfigParser()
 config.read("settings.ini")
 
 #vardt is True by default, if these values were not specified.
-dts = dts or config.getfloat("sim", "dts") #Delta-time scale (2 means that the simulation will run 2 times the normal speed of the universe).
-cdt = cdt or config.getfloat("sim", "cdt") #Constant delta-time (better perfrmace, poorer presentation).
+
+if not found_cdt:
+    cdt = config.getfloat("sim", "cdt") #Constant delta-time (better perfrmace, poorer presentation).
+
+if not found_dts:
+    dts = config.getfloat("sim", "dts") #Delta-time scale (2 means that the simulation will run 2 times the normal speed of the universe).
+
 unidir = os.getcwd() + "/" + config.get("prog", "unidir")
 
 #Effects settings:
@@ -177,7 +196,7 @@ last_reported = 0 #How many real time seconds went by since the last save?
 lasted = 0 #How much did the simulation last?
 last = time.time()
 start = last
-dt = 0 #Initially nothing happens (if vardt is on).
+dtr = 0 #Initially nothing happens (if vardt is on).
 
 manager = fileManager.FileManager(unidir)
 
@@ -210,7 +229,8 @@ if not mini:
 
     #<UI updates>
     def update_time_info(el):
-        el.setText("Time: " + str(int(uni.time/60/60)) + "h.")
+        #el.setText("Time: " + str(int(uni.time/60/60)) + "h.")
+        el.setText("Date: " + uni.getDate())
 
     def set_desc(el):
         el.setText(uni.description)
@@ -395,13 +415,13 @@ def pygUpdate():
 
 
     if keys["e"]:
-        camera.zoom *= zcps ** dt
+        camera.zoom *= zcps ** dtr
 
     if keys["q"]:
-        camera.zoom /= zcps ** dt
+        camera.zoom /= zcps ** dtr
 
     if camera.determineDirection(keys["w"], keys["a"], keys["s"], keys["d"]):
-        factor =  cs * dt / camera.zoom
+        factor =  cs * dtr / camera.zoom
         camera.position.x += math.cos(camera.direction) * factor
         camera.position.y += math.sin(camera.direction) * factor
 
@@ -422,11 +442,16 @@ report()
 #1. Mathematically enhance the Uni class.
 
 while run:
+    #dtr: real seconds
+    #dtu: universe seconds
+
     #If variable delta-time is set:
     if vardt:
-        uni.update(dt*dts)
+        dtu = dtr*dts #Immediate delta-time.
     else: #Else forward in time by some constant.
-        uni.update(cdt)
+        dtu = cdt
+
+    uni.update(dtu)
 
     if not mini:
         run = pygUpdate()
@@ -435,14 +460,14 @@ while run:
     #The update is considered to be done.
 
     if save_sim_each > 0:
-        last_saved += 1
+        last_saved += dtu
 
         if last_saved >= save_sim_each:
             last_saved = 0
             save()
 
     if report_each > 0:
-        last_reported += dt
+        last_reported += dtr
 
         if last_reported >= report_each:
             last_reported = 0
@@ -456,9 +481,9 @@ while run:
         if runForR <= lasted:
             run = False
 
-    dt = time.time() - last
+    dtr = time.time() - last
     last = time.time()
-    lasted += dt
+    lasted += dtr
 #</main>
 
 print "The simulation has ended."

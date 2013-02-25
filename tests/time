@@ -1,0 +1,21 @@
+#!/usr/bin/python
+
+import benchmark
+
+cdt = 1
+tu = 1000
+tests = 1
+
+def one_sec():
+    time = 0.0
+
+    for i in range(tests):
+        time += benchmark.get_time(cdt, "s", tu)
+
+    return (time/tests)/tu
+
+
+sec = one_sec()
+
+print "cdt:", cdt
+print "Graviton can simulate ", 1/sec, "times faster than the real universe."

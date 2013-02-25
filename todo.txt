@@ -1,0 +1,10 @@
+Preparation phase:
+3. Nađi adekvatan CDT (na Internetu).
+4. Provjeri (putem HORIZONSa, simuliraj 1god) i popravi matematiku teoretski.
+5. Testiraj matematiku na pravim primjerima orbita planeta.
+
+Work phase:
+1. Nađi način na koji ćeš vaditi podatke (event?).
+2. Testiraj simulator na primjeru nedavnog meteorita koji je izazvao spektakl u Rusiji.
+3. Nađi još primjera za testiranje VALIDNOSTI SIMULATORA.
+4. Kada si dokazao validnost, pređi na predviđanja.

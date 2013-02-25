@@ -55,7 +55,13 @@ class FileManager:
         """Called when the -fe option is on, but the -cnt is not."""
         dire = self.unisdir + name + "/"
 
-        for dfile in os.listdir(dire):
+        try:
+            dirs = os.listdir(dire)
+        except:
+            dirs = []
+            print "Can't delete", dire + ": not found."
+
+        for dfile in dirs:
             file_path = os.path.join(dire, dfile)
             try:
                 if os.path.isfile(file_path):
