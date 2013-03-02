@@ -1,6 +1,7 @@
 Graviton
 ========
 
+<pre>
 Gravity simulator in Python.
 
 To run:
@@ -27,3 +28,4 @@ To run:
             -min    - run the minimal version of Graviton (best used in conjunction with -cdt <float> for accurate measurements).
 
 This software is licensed under the MIT license, provided in the doc/LICENSE.txt file.
+</pre>

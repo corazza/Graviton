@@ -2,9 +2,9 @@
 
 import benchmark
 
-cdt = 1
+cdt = 10
 tu = 1000
-tests = 1
+tests = 5
 
 def one_sec():
     time = 0.0

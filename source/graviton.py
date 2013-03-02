@@ -8,9 +8,10 @@ import event as gevent
 import util
 from body import *
 
+import user #For user scripts.
 
 
-
+#./graviton solar_system -s x -r 60 -tu y -cdt z -fe -min
 
 
 #<command line arguments>
@@ -267,7 +268,6 @@ if not mini:
         "s": False,
         "d": False,
     }
-
 #</init>
 
 
@@ -278,11 +278,11 @@ if not mini:
 
 
 #<events>
-def save():
+def save(arg):
     print "Saving."
     manager.saveUni(uni, alt_name)
 
-def report():
+def report(arg):
     will = -1 #Nothing specified.
 
     if runForR > -1:
@@ -321,11 +321,22 @@ def report():
     else:
         print "Constant delta-time:", cdt
     print
+    earth = uni.bodies["earth"]
+    ep = earth.desc()["position"]
+    ev = earth.desc()["velocity"]
+    print "Earth position: (" + str(ep["x"]) + ", " + str(ep["y"]) + ")"
+    print "Earth velocity: (" + str(ev["x"]) + ", " + str(ev["y"]) + ")"
+    print
     print
 
 
 gevent.sub("report", report)
 gevent.sub("save", save)
+
+for event in user.events:
+    for handler in user.events[event]:
+        gevent.sub(event, handler)
+
 #</events>
 
 
@@ -434,7 +445,7 @@ def pygUpdate():
 #<setup>
 print "Starting the simulation."
 print
-report()
+report(None)
 #</setup>
 
 #<main>
@@ -471,7 +482,7 @@ while run:
 
         if last_reported >= report_each:
             last_reported = 0
-            report()
+            report(None)
 
     if runForU > -1:
         if runForU <= uni.time:
@@ -488,7 +499,7 @@ while run:
 
 print "The simulation has ended."
 print
-report()
+report(None)
 
 if save_at_exit:
     save()

@@ -1,5 +1,5 @@
-subs = {}    
-    
+subs = {}
+
 def sub(event, f):
     if subs.has_key(event):
         subs[event].append(f)
@@ -8,9 +8,8 @@ def sub(event, f):
 
 def unsub(event, f):
     if subs.has_key(event):
-        subs[event] = [f2 for f2 in subs if f2 != f]    
-    
-def pub(event):
+        subs[event] = [f2 for f2 in subs if f2 != f]
+
+def pub(event, arg):
     if subs.has_key(event):
-        for f in subs[event]: f()
-        
+        for f in subs[event]: f(arg)
