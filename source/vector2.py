@@ -41,3 +41,6 @@ class Vector2:
     def null(self):
         self.x = 0
         self.y = 0
+
+    def copy(self):
+        Vector2(self.x, self.y)

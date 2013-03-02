@@ -13,10 +13,10 @@ To run:
         Parameters (none are required, parameter types are specified in angle brackets, all of these override settings.ini):
 
             -r      - report some state each <float> real time seconds seconds.
-            -tu     - run the simulation for <float> universe seconds.
+            -tu     - run the simulation for <float> simulated seconds.
             -tr     - run the simulation for <float> real seconds.
             -f      - save the simulation into a file named "unis/<string>.json" - recommended so the original doesn't get overwritten'!
-            -s      - save the simulation each <float> universe seconds (best used with "-f alternative_name").
+            -s      - save the simulation each <float> simulated seconds (best used with "-f alternative_name").
             -dts    - run the simlation <float> times faster than the real universe (-dts 2 makes the planets travel two times faster, for example).
             -cdt    - run the simulation with a constant delta-time of <float> (in seconds, overrides -dts).
 

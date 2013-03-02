@@ -1,5 +1,6 @@
 Work phase:
-1. Nađi način na koji ćeš vaditi podatke (event?).
-2. Testiraj simulator na primjeru nedavnog meteorita koji je izazvao spektakl u Rusiji.
-3. Nađi još primjera za testiranje VALIDNOSTI SIMULATORA.
-4. Kada si dokazao validnost, pređi na predviđanja.
+1. Convert to 3D!
+2. Check whether floating point arithmetic is introducing the errors and find a better type.
+3. Testiraj simulator na primjeru nedavnog meteorita koji je izazvao spektakl u Rusiji.
+4. Nađi još primjera za testiranje VALIDNOSTI SIMULATORA.
+5. Kada si dokazao validnost, pređi na predviđanja.

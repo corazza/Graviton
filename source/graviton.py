@@ -14,11 +14,17 @@ import user #For user scripts.
 #./graviton solar_system -s x -r 60 -tu y -cdt z -fe -min
 
 
+
+
+
+
+
+
 #<command line arguments>
 if len(sys.argv) < 2:
     raise Exception("World name not given!")
 
-runForU = -1 #Run for x universe seconds, -1 = run forever.
+runForU = -1 #Run for x simulated seconds, -1 = run forever.
 runForR = -1 #Run for x real seconds, -1 = run forever. One of U and R has to be -1.
 mini = False #The minimal version of Graviton should be running.
 alt_name = -1 #Save the simulation in an alternative file, without modifying the original, -1 = use the original name, -2 = using -fe.
@@ -64,7 +70,6 @@ for i in range(len(sys.argv)):
         if i + 1 < len(sys.argv) and not found_tr:
             found_tu = True
             runForU = float(sys.argv[i+1])
-            print "The simulation will be running until " + util.getDate(runForU) + " (universe time)."
         elif found_tr:
             "-tu ignored, -tr already set."
         else:
@@ -104,7 +109,7 @@ for i in range(len(sys.argv)):
     if arg == "-s":
         if i + 1 < len(sys.argv):
             save_sim_each = float(sys.argv[i+1])
-            print "The simulation will be saved each " + str(save_sim_each) + " universe seconds."
+            print "The simulation will be saved each " + str(save_sim_each) + " simulated seconds."
         else:
             raise Exception("Parameter for '-s' not given! It must be an integer following '-s', eg. '-s 20'.")
 
@@ -149,7 +154,7 @@ print
 
 
 
-#Effects imports:
+#<effects imports>
 if not mini:
     import pygame
     from pygame.locals import *
@@ -158,6 +163,14 @@ if not mini:
 
     import gfx
     import ui as uim
+#</effects imports>
+
+
+
+
+
+
+
 
 #<settings>
 config = ConfigParser.RawConfigParser()
@@ -165,13 +178,24 @@ config.read("settings.ini")
 
 #vardt is True by default, if these values were not specified.
 
-if not found_cdt:
-    cdt = config.getfloat("sim", "cdt") #Constant delta-time (better perfrmace, poorer presentation).
+try:
+    if not found_cdt:
+        cdt = config.getfloat("sim", "cdt") #Constant delta-time (better perfrmace, poorer presentation).
+except:
+    pass
 
-if not found_dts:
-    dts = config.getfloat("sim", "dts") #Delta-time scale (2 means that the simulation will run 2 times the normal speed of the universe).
+try:
+    if not found_dts:
+        dts = config.getfloat("sim", "dts") #Delta-time scale (2 means that the simulation will run 2 times the normal speed of the simulation).
+except:
+    pass
 
 unidir = os.getcwd() + "/" + config.get("prog", "unidir")
+FPS = config.getint("prog", "fps")
+FPS = 1000.0/FPS
+orbit_resolution = config.getint("prog", "orbit_resolution")
+orbit_resolution = 1000.0/orbit_resolution
+orbit_buffer = config.getint("prog", "orbit_buffer")
 
 #Effects settings:
 if not mini:
@@ -189,12 +213,16 @@ if not mini:
 
 
 
+
+
 #<init>
 run = True
 last_saved = 0 #How many updates went by since the last save?
 last_reported = 0 #How many real time seconds went by since the last save?
+last_render = 0
+last_take_pos = 0
 
-lasted = 0 #How much did the simulation last?
+lasted = 0 #How much did the simulation last? (in real seconds)
 last = time.time()
 start = last
 dtr = 0 #Initially nothing happens (if vardt is on).
@@ -219,7 +247,8 @@ if not mini:
     icon = pygame.image.load("images/icon.png")
     screen = pygame.display.set_mode((x, y))
     camera = gfx.Camera()
-    renderer = gfx.Renderer(screen, pygame, camera)
+    renderer = gfx.Renderer(screen, pygame, camera, orbit_buffer)
+    renderer.FPS = FPS
     ui = uim.UI(uni, camera)
 
     pygame.display.set_caption("Graviton - " + sys.argv[1])
@@ -277,75 +306,86 @@ if not mini:
 
 
 
-#<events>
-def save(arg):
-    print "Saving."
-    manager.saveUni(uni, alt_name)
-
-def report(arg):
-    will = -1 #Nothing specified.
-
-    if runForR > -1:
-        has = (time.time() - start) #Has been running for / real seconds.
-        will = runForR - lasted #Will be running for / real seconds.
-
-        has = str(has) + " real seconds"
-        will = str(will) + " real seconds"
-
-    elif runForU > -1:
-        has = uni.time #Has been running for / universe seconds.
-        will = runForU - uni.time #Will be running for / universe seconds.
-
-        has = str(has) + " universe seconds"
-        will = str(will) + " universe seconds"
-
-    if will < 0:
-        has = (time.time() - start) #Has been running for / real seconds.
-        will = "unlimited"
-
-        has = str(has) + " real seconds"
-        will = str(will) + " real seconds"
-
-    print " --- This is an automatic status report. --- "
-    print "The simulation started at date " + time.asctime(time.localtime(start)) + "."
-
-    print "It has been running for " + has + "."
-    print "It will be running for another " + will + "."
-
-    print "Universe date: " + uni.getDate() + "." #uni.datatime = UNIX time at which the data was acquired.
-    print "Universe time: " + str(uni.time) + " (in universe seconds)."
-    print
-    print "Program settings:"
-    if vardt:
-        print "Delta-time scale:", dts
-    else:
-        print "Constant delta-time:", cdt
-    print
-    earth = uni.bodies["earth"]
-    ep = earth.desc()["position"]
-    ev = earth.desc()["velocity"]
-    print "Earth position: (" + str(ep["x"]) + ", " + str(ep["y"]) + ")"
-    print "Earth velocity: (" + str(ev["x"]) + ", " + str(ev["y"]) + ")"
-    print
-    print
-
-
-gevent.sub("report", report)
-gevent.sub("save", save)
-
-for event in user.events:
-    for handler in user.events[event]:
-        gevent.sub(event, handler)
-
-#</events>
 
 
 #<functions>
+def report(arg):
+    will_num = -1 #Nothing specified.
+
+    has_been_running_real   = (time.time() - start)
+    has_been_running_univ   = uni.time
+    will_be_running_univ    = runForU - uni.time
+    will_be_running_real    = runForR - lasted
+
+    time_limit = True
+
+    if runForR > -1:
+        will_be_running     = will_be_running_real
+        will_be_running_s   = str(will_be_running) + " real seconds"
+        has_been_running    = has_been_running_real
+        has_been_running_s  = str(has_been_running) + " real seconds"
+    elif runForU > -1:
+        will_be_running     = will_be_running_univ
+        will_be_running_s   = str(will_be_running) + " simulated seconds"
+        has_been_running    = has_been_running_univ
+        has_been_running_s  = str(has_been_running) + " simulated seconds"
+    else:
+        time_limit = False
+        print "Time limit bb"
+        will_be_running     = 0
+        will_be_running_s   = "unknown seconds"
+        has_been_running    = has_been_running_real
+        has_been_running_s  = str(has_been_running) + " real seconds"
+
+    #Some simulations don't have a time limit:
+    if time_limit:
+        percent     = 100 * has_been_running / (has_been_running+will_be_running)
+        percent_s   = "{0:.4f}%".format(percent)
+        eta_s       = ""
+
+        if percent != 0 and lasted != 0:
+            seconds = int((100 - percent) / (percent/lasted))
+            minutes = seconds/60
+            hours   = minutes/60
+            days    = hours/24
+            years   = days/365
+
+            days    -= years*365
+            hours   -= days*24
+            minutes -= hours*60
+            seconds -= minutes*60
+
+            eta_s += str(years)     + " years "
+            eta_s += str(days)      + " days "
+            eta_s += str(hours)     + " hours "
+            eta_s += str(minutes)   + " minutes "
+            eta_s += str(seconds)   + " seconds"
+        else:
+            eta_s += "unknown"
+    else:
+        eta_s = "unknown"
+        percent_s = "unknown"
+
+    if vardt:
+        time_setting = "Delta-time scale: " + str(dts)
+    else:
+        time_setting = "Constant delta-time: " + str(cdt)
+
+    settings = ""
+
+    settings += time_setting
+
+    user.report(uni, time.asctime(time.localtime(start)), percent_s, eta_s, has_been_running_real, has_been_running_univ, will_be_running_s, settings)
+
+
+
 def pygUpdate():
+    global last_render
+    global last_take_pos
     run = True
 
     for event in pygame.event.get():
-        if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
+        if event.type == QUIT:
             run = False
 
         if event.type == MOUSEBUTTONDOWN:
@@ -436,25 +476,75 @@ def pygUpdate():
         camera.position.x += math.cos(camera.direction) * factor
         camera.position.y += math.sin(camera.direction) * factor
 
-    renderer.render(uni, ui)
+    if last_render/FPS > 1:
+        renderer.render(uni, ui)
+        last_render = 0
+    else:
+        last_render += 1
+
+    if last_take_pos/orbit_resolution > 1:
+        renderer.take_pos(uni)
+        last_take_pos = 0
+    else:
+        last_take_pos += 1
+
     return run
 
 #</functions>
 
 
+
+
+
+
+
+
+
+
+#<events>
+def save(arg):
+    print "Saving."
+    manager.saveUni(uni, alt_name)
+
+gevent.sub("save", save)
+gevent.sub("report", report)
+
+for event in user.events:
+    for handler in user.events[event]:
+        gevent.sub(event, handler)
+
+#</events>
+
+
+
+
+
+
+
+
+
+
 #<setup>
 print "Starting the simulation."
 print
-report(None)
+gevent.pub("report", None)
 #</setup>
 
+
+
+
+
+
+
+
+
+
+
+
 #<main>
-
-#1. Mathematically enhance the Uni class.
-
 while run:
     #dtr: real seconds
-    #dtu: universe seconds
+    #dtu: simulated seconds
 
     #If variable delta-time is set:
     if vardt:
@@ -482,7 +572,7 @@ while run:
 
         if last_reported >= report_each:
             last_reported = 0
-            report(None)
+            gevent.pub("report", None)
 
     if runForU > -1:
         if runForU <= uni.time:
@@ -497,9 +587,16 @@ while run:
     lasted += dtr
 #</main>
 
+
+
+
+
+
+#<termination>
 print "The simulation has ended."
 print
-report(None)
+gevent.pub("report", None)
 
 if save_at_exit:
     save()
+#</termination>

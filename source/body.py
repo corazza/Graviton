@@ -22,6 +22,7 @@ class Body:
         self.velocity = Vector2(0, 0)
         self.force = Vector2(0, 0)
         self.acceleration = Vector2(0, 0)
+        self.previous_positions = []
 
     def desc(self):
         body = {
