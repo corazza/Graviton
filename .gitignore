@@ -1,3 +1,6 @@
 *~
 *.pyc
 changelog.txt
+unis/*
+!unis/solar_system.json
+
