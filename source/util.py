@@ -58,4 +58,3 @@ def getDate(seconds):
     """Calculate the date offset from 2006-Mar-13 17:30:59"""
 
     return "2006-Mar-13 17:30:59 + " + str(seconds) + " seconds"
-

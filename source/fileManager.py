@@ -44,8 +44,8 @@ class FileManager:
             d = desc["bodies"][bid]
 
             body = Body(d["name"], d["m"], d["r"], d["color"])
-            body.position = Vector2(d["position"]["x"], d["position"]["y"])
-            body.velocity = Vector2(d["velocity"]["x"], d["velocity"]["y"])
+            body.position = Vector2(d["position"]["x"], d["position"]["y"], d["position"]["z"])
+            body.velocity = Vector2(d["velocity"]["x"], d["velocity"]["y"], d["velocity"]["z"])
 
             uni.addBody(body, bid)
 

@@ -9,14 +9,14 @@ class Camera:
     def __init__(self, x = 0, y = 0):
         self.position = v.Vector2(x, y)
 
-        self.direction = 0
-        self.zoom = 1
-        self.zooming = 1
-        self.centered = False
+        self.direction  = 0
+        self.zoom       = 1
+        self.zooming    = 1
+        self.centered   = False
 
     def determineDirection(self, w, a, s, d):
-        self.direction = 0
-        moving = True
+        self.direction  = 0
+        moving          = True
 
         if w:
             self.direction = 0
@@ -46,7 +46,6 @@ class Camera:
             moving = False
 
         self.direction += 360 - 90
-
         self.direction = 2 * math.pi * self.direction / 360
 
         return moving
@@ -60,25 +59,26 @@ class Camera:
 
 class Renderer:
     def __init__(self, screen, pygame, camera, orbit_buffer, draw_orbits=False, width = 1300, height = 700):
-        self.screen = screen
-        pygame = pygame
-        self.camera = camera
-        self.width = width
-        self.height = height
-        self.orbit_buffer = orbit_buffer
-        self.draw_orbits = draw_orbits
+        self.screen         = screen
+        pygame              = pygame
+        self.camera         = camera
+        self.width          = width
+        self.height         = height
+        self.orbit_buffer   = orbit_buffer
+        self.draw_orbits    = draw_orbits
 
         self.scale = 1
+
         self.colors = {
-            "black": pygame.Color(0, 0, 0),
-            "white": pygame.Color(255, 255, 255),
-            "red": pygame.Color(255, 0, 0),
-            "blue": pygame.Color(50, 50, 255),
-            "green": pygame.Color(0, 255, 0),
-            "earth": pygame.Color("#98cbfe"),
-            "moon": pygame.Color(100, 100, 100),
-            "mars": pygame.Color("#b22400"),
-            "orange": pygame.Color("#FF9900")
+            "black":    pygame.Color(0, 0, 0),
+            "white":    pygame.Color(255, 255, 255),
+            "red":      pygame.Color(255, 0, 0),
+            "blue":     pygame.Color(50, 50, 255),
+            "green":    pygame.Color(0, 255, 0),
+            "earth":    pygame.Color("#98cbfe"),
+            "moon":     pygame.Color(100, 100, 100),
+            "mars":     pygame.Color("#b22400"),
+            "orange":   pygame.Color("#FF9900")
         }
 
         self.fonts = {
@@ -89,9 +89,7 @@ class Renderer:
         """Record the positions of objects for drawing orbits"""
         for body in uni.bodies.itervalues():
             body.previous_positions.append([body.position.x, body.position.y])
-
             diff = len(body.previous_positions) - self.orbit_buffer
-
             if diff > 0:
                 body.previous_positions = body.previous_positions[diff:]
 
@@ -136,28 +134,26 @@ class Renderer:
 
             if ui.namesEnabled:
                 for body in uni.bodies.itervalues():
-                    name = self.fonts["names"].render(body.name, 1, (240, 240, 240))
-                    pos = util.toScreen(body.position, self.camera)
-                    size = self.fonts["names"].size(body.name)
-                    pos[0] -= size[0]/2
-                    pos[1] -= size[1] + body.r*self.camera.zoom*2
+                    name    = self.fonts["names"].render(body.name, 1, (240, 240, 240))
+                    pos     = util.toScreen(body.position, self.camera)
+                    size    = self.fonts["names"].size(body.name)
+                    pos[0]  -= size[0]/2
+                    pos[1]  -= size[1] + body.r*self.camera.zoom*2
+
                     self.screen.blit(name, pos)
 
             if ui.vectorsEnabled:
                 for body in uni.bodies.itervalues():
-                    pos = util.toScreen(body.position, self.camera)
-                    vel = body.velocity.tl()
-
-                    r = 0.005
-
-                    end = [int(pos[0] + vel[0]*r), int(pos[1] + vel[1]*r)]
+                    pos     = util.toScreen(body.position, self.camera)
+                    vel     = body.velocity.tl()
+                    r       = 0.005
+                    end     = [int(pos[0] + vel[0]*r), int(pos[1] + vel[1]*r)]
+                    text    = "v = " + str(int(body.velocity.l())) + "m/s"
+                    v       = self.fonts["names"].render((text), 1, (240, 240, 240))
+                    pos     = [(pos[0] + end[0])/2 + 10, (pos[1] + end[1])/2 + 10]
 
                     pygame.draw.line(self.screen, self.colors["white"], pos, end)
                     pygame.draw.circle(self.screen, self.colors["white"], end, 1)
-
-                    text = "v = " + str(int(body.velocity.l())) + "m/s"
-                    v = self.fonts["names"].render((text), 1, (240, 240, 240))
-                    pos = [(pos[0] + end[0])/2 + 10, (pos[1] + end[1])/2 + 10]
                     self.screen.blit(v, pos)
 
 

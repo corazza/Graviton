@@ -1,6 +1,9 @@
 Work phase:
-1. Convert to 3D!
 2. Check whether floating point arithmetic is introducing the errors and find a better type.
 3. Testiraj simulator na primjeru nedavnog meteorita koji je izazvao spektakl u Rusiji.
 4. Nađi još primjera za testiranje VALIDNOSTI SIMULATORA.
 5. Kada si dokazao validnost, pređi na predviđanja.
+
+Noncritical improvements:
+1. Account for the third dimension in the renderer.
+2. Improve the code.

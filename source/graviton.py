@@ -18,26 +18,26 @@ import user #For user scripts.
 
 
 #<options>
-runForU = -1 #Run for x simulated seconds, -1 = run forever.
-runForR = -1 #Run for x real seconds, -1 = run forever. One of U and R has to be -1.
-mini = False #The minimal version of Graviton should be running.
-alt_name = -1 #Save the simulation in an alternative file, without modifying the original, -1 = use the original name, -2 = using -fe.
-dir_name = -1 #Save the simulation in a different file each time.
-save_sim_each = 0 #Save the simulation each x updates, 0 = no automatic saving, 1 = save each update.
-report_each = 0 #Report some state each x real time seconds.
-orbit_resolution = 0 #Update orbits each x real time seconds.
-orbit_buffer = 0 #Keep orbit edge positions in memory for x simulated seconds.
+runForU             = -1 #Run for x simulated seconds, -1 = run forever.
+runForR             = -1 #Run for x real seconds, -1 = run forever. One of U and R has to be -1.
+mini                = False #The minimal version of Graviton should be running.
+alt_name            = -1 #Save the simulation in an alternative file, without modifying the original, -1 = use the original name, -2 = using -fe.
+dir_name            = -1 #Save the simulation in a different file each time.
+save_sim_each       = 0 #Save the simulation each x updates, 0 = no automatic saving, 1 = save each update.
+report_each         = 0 #Report some state each x real time seconds.
+orbit_resolution    = 0 #Update orbits each x real time seconds.
+orbit_buffer        = 0 #Keep orbit edge positions in memory for x simulated seconds.
 
 #These will not be booleans, but floats. This is for convenience.
 dts = False #Delta-time scale
 cdt = False #Constant delta-time
 
 #Flags
-vardt = True #This is a boolean, it is determined by the program and not settings.ini.
-set_fe = False
-cnt = False
-save_at_exit = False
-draw_orbits = False
+vardt           = True #This is a boolean, it is determined by the program and not settings.ini.
+set_fe          = False
+cnt             = False
+save_at_exit    = False
+draw_orbits     = False
 #</options>
 
 
@@ -50,10 +50,10 @@ if len(sys.argv) < 2:
     raise Exception("World name not given!")
 
 #tmp
-found_cdt = False
-found_dts = False
-found_tr = False
-found_tu = False
+found_cdt   = False
+found_dts   = False
+found_tr    = False
+found_tu    = False
 
 for i in range(len(sys.argv)):
     arg = sys.argv[i]
@@ -321,7 +321,14 @@ if not mini:
 
 
 #<functions>
+
+last_report_percentstamp    = -1
+last_report_timestamp       = -1
+
 def report(arg):
+    global last_report_percentstamp
+    global last_report_timestamp
+
     will_num = -1 #Nothing specified.
 
     has_been_running_real   = (time.time() - start)
@@ -356,15 +363,24 @@ def report(arg):
         eta_s       = ""
 
         if percent != 0 and lasted != 0:
-            seconds = int((100 - percent) / (percent/lasted))
-            minutes = seconds/60
-            hours   = minutes/60
-            days    = hours/24
-            years   = days/365
+            seconds_since_last_report = time.time() - last_report_timestamp
+            percent_since_last_report = percent - last_report_percentstamp
 
-            days    -= years*365
-            hours   -= days*24
-            minutes -= hours*60
+            remaining_percent   = 100 - percent
+            percent_per_second  = percent_since_last_report/seconds_since_last_report
+
+            seconds = int(remaining_percent / percent_per_second)
+
+            years   = seconds/60/60/24/365
+            seconds -= years*365*24*60*60
+
+            days    = seconds/60/60/24
+            seconds -= days*24*60*60
+
+            hours   = seconds/60/60
+            seconds -= hours*60*60
+
+            minutes = seconds/60
             seconds -= minutes*60
 
             eta_s += str(years)     + " years "
@@ -374,9 +390,13 @@ def report(arg):
             eta_s += str(seconds)   + " seconds"
         else:
             eta_s += "unknown"
+
+        last_report_timestamp = time.time()
+        last_report_percentstamp = percent
+
     else:
-        eta_s = "unknown"
-        percent_s = "unknown"
+        eta_s       = "unknown"
+        percent_s   = "unknown"
 
     if vardt:
         time_setting = "Delta-time scale: " + str(dts)
@@ -606,6 +626,7 @@ while run:
 
 
 #<termination>
+gevent.pub("end", uni)
 print "The simulation has ended."
 print
 gevent.pub("report", None)

@@ -9,11 +9,11 @@ font = pygame.font.Font(None, 36)
 
 class Element:
     def __init__(self, etype, x, y):
-        self.x = x
-        self.y = y
-        self.type = etype
-        self.event = False
-        self.display = True
+        self.x          = x
+        self.y          = y
+        self.type       = etype
+        self.event      = False
+        self.display    = True
 
     def enable(self):
         self.display = True
@@ -25,12 +25,13 @@ class Element:
 class Button(Element):
     def __init__(self, event, x, y, images):
         Element.__init__(self, "button", x, y)
-        self.event = event
-        self.images = images
-        self.w = self.images["active"].get_width()
-        self.h = self.images["active"].get_height()
 
-        self.state = "inactive"
+        self.event  = event
+        self.images = images
+        self.w      = self.images["active"].get_width()
+        self.h      = self.images["active"].get_height()
+
+        self.state  = "inactive"
 
 class Text(Element):
     def __init__(self, x, y):
@@ -38,9 +39,9 @@ class Text(Element):
         self.setText("")
 
     def setText(self, text):
-        self.text = font.render(text, 1, (200, 200, 200))
-        self.w = self.text.get_width()
-        self.h = self.text.get_height()
+        self.text   = font.render(text, 1, (200, 200, 200))
+        self.w      = self.text.get_width()
+        self.h      = self.text.get_height()
 
 
 
