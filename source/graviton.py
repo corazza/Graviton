@@ -17,13 +17,7 @@ import user #For user scripts.
 
 
 
-
-
-
-#<command line arguments>
-if len(sys.argv) < 2:
-    raise Exception("World name not given!")
-
+#<options>
 runForU = -1 #Run for x simulated seconds, -1 = run forever.
 runForR = -1 #Run for x real seconds, -1 = run forever. One of U and R has to be -1.
 mini = False #The minimal version of Graviton should be running.
@@ -31,6 +25,8 @@ alt_name = -1 #Save the simulation in an alternative file, without modifying the
 dir_name = -1 #Save the simulation in a different file each time.
 save_sim_each = 0 #Save the simulation each x updates, 0 = no automatic saving, 1 = save each update.
 report_each = 0 #Report some state each x real time seconds.
+orbit_resolution = 0 #Update orbits each x real time seconds.
+orbit_buffer = 0 #Keep orbit edge positions in memory for x simulated seconds.
 
 #These will not be booleans, but floats. This is for convenience.
 dts = False #Delta-time scale
@@ -41,6 +37,17 @@ vardt = True #This is a boolean, it is determined by the program and not setting
 set_fe = False
 cnt = False
 save_at_exit = False
+draw_orbits = False
+#</options>
+
+
+
+
+
+
+#<command line arguments>
+if len(sys.argv) < 2:
+    raise Exception("World name not given!")
 
 #tmp
 found_cdt = False
@@ -84,6 +91,14 @@ for i in range(len(sys.argv)):
             print "-tr ignored, -tu already set."
         else:
             raise Exception("Parameter for '-t' not given! It must be a float following '-t', eg. '-t 200000.2432'.")
+
+    if arg == "-do":
+        if i + 2 < len(sys.argv):
+            draw_orbits = True
+            orbit_resolution = float(sys.argv[i+1])
+            orbit_buffer = int(sys.argv[i+2])
+        else:
+            raise Exception("Parameters for '-do' not given! They must be a float and an int following '-do', eg. '-t 0.5 10000.0'.")
 
     if arg == "-r":
         if i + 1 < len(sys.argv):
@@ -172,7 +187,7 @@ if not mini:
 
 
 
-#<settings>
+#<options>
 config = ConfigParser.RawConfigParser()
 config.read("settings.ini")
 
@@ -193,9 +208,6 @@ except:
 unidir = os.getcwd() + "/" + config.get("prog", "unidir")
 FPS = config.getint("prog", "fps")
 FPS = 1000.0/FPS
-orbit_resolution = config.getint("prog", "orbit_resolution")
-orbit_resolution = 1000.0/orbit_resolution
-orbit_buffer = config.getint("prog", "orbit_buffer")
 
 #Effects settings:
 if not mini:
@@ -206,7 +218,7 @@ if not mini:
     cs = config.getint("prog", "cs") #Camera speed
     zoom = config.getfloat("prog", "zoom") #Default zoom
     zcps = config.getfloat("prog", "zcps") #Zoom change per second
-#</settings>
+#</options>
 
 
 
@@ -247,7 +259,7 @@ if not mini:
     icon = pygame.image.load("images/icon.png")
     screen = pygame.display.set_mode((x, y))
     camera = gfx.Camera()
-    renderer = gfx.Renderer(screen, pygame, camera, orbit_buffer)
+    renderer = gfx.Renderer(screen, pygame, camera, orbit_buffer, draw_orbits)
     renderer.FPS = FPS
     ui = uim.UI(uni, camera)
 
@@ -482,11 +494,12 @@ def pygUpdate():
     else:
         last_render += 1
 
-    if last_take_pos/orbit_resolution > 1:
-        renderer.take_pos(uni)
-        last_take_pos = 0
-    else:
-        last_take_pos += 1
+    if draw_orbits:
+        last_take_pos += dtr
+
+        if last_take_pos/orbit_resolution > 1:
+            renderer.take_pos(uni)
+            last_take_pos = 0
 
     return run
 

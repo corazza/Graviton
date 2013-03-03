@@ -19,6 +19,7 @@ To run:
             -s      - save the simulation each <float> simulated seconds (best used with "-f alternative_name").
             -dts    - run the simlation <float> times faster than the real universe (-dts 2 makes the planets travel two times faster, for example).
             -cdt    - run the simulation with a constant delta-time of <float> (in seconds, overrides -dts).
+            -do     - draw orbits. Update them each <float> real seconds and keep them in memory for <float> real seconds.
 
         Flags (none required):
 

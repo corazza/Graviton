@@ -59,13 +59,14 @@ class Camera:
 
 
 class Renderer:
-    def __init__(self, screen, pygame, camera, orbit_buffer, width = 1300, height = 700):
+    def __init__(self, screen, pygame, camera, orbit_buffer, draw_orbits=False, width = 1300, height = 700):
         self.screen = screen
         pygame = pygame
         self.camera = camera
         self.width = width
         self.height = height
         self.orbit_buffer = orbit_buffer
+        self.draw_orbits = draw_orbits
 
         self.scale = 1
         self.colors = {
@@ -94,7 +95,9 @@ class Renderer:
             if diff > 0:
                 body.previous_positions = body.previous_positions[diff:]
 
-    def render(self, uni, ui):
+    def render(self, uni, ui, draw_orbits = False):
+        draw_orbits = draw_orbits or self.draw_orbits
+
         if self.camera.centered:
             self.camera.position.x = self.camera.centered.position.x
             self.camera.position.y = self.camera.centered.position.y
@@ -105,20 +108,21 @@ class Renderer:
             pygame.draw.circle(self.screen, self.colors[body.color], util.toScreen(body.position, self.camera), int(body.r*self.scale*self.camera.zoom))
 
         if ui.enabled:
-            for body in uni.bodies.itervalues():
-                if not len(body.previous_positions):
-                    break
+            if draw_orbits:
+                for body in uni.bodies.itervalues():
+                    if not len(body.previous_positions):
+                        break
 
-                positions = []
+                    positions = []
 
-                for pos in body.previous_positions:
-                    sp = util.toScreenXy([pos[0], pos[1]], self.camera)
-                    positions.append(sp)
+                    for pos in body.previous_positions:
+                        sp = util.toScreenXy([pos[0], pos[1]], self.camera)
+                        positions.append(sp)
 
-                while len(positions) < 2:
-                    positions.append(util.toScreenXy([body.previous_positions[-1][0], body.previous_positions[-1][1]], self.camera))
+                    while len(positions) < 2:
+                        positions.append(util.toScreenXy([body.previous_positions[-1][0], body.previous_positions[-1][1]], self.camera))
 
-                pygame.draw.lines(self.screen, self.colors["white"], False, positions)
+                    pygame.draw.lines(self.screen, self.colors["white"], False, positions)
 
             for e in ui.elements.itervalues():
                 if not e.display:
