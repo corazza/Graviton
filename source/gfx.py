@@ -144,17 +144,17 @@ class Renderer:
 
             if ui.vectorsEnabled:
                 for body in uni.bodies.itervalues():
-                    pos     = util.toScreen(body.position, self.camera)
-                    vel     = body.velocity.tl()
-                    r       = 0.005
-                    end     = [int(pos[0] + vel[0]*r), int(pos[1] + vel[1]*r)]
-                    text    = "v = " + str(int(body.velocity.l())) + "m/s"
-                    v       = self.fonts["names"].render((text), 1, (240, 240, 240))
-                    pos     = [(pos[0] + end[0])/2 + 10, (pos[1] + end[1])/2 + 10]
+                    pos         = util.toScreen(body.position, self.camera)
+                    vel         = body.velocity.tl()
+                    r           = 0.003
+                    end         = [int(pos[0] + vel[0]*r), int(pos[1] + vel[1]*r)]
+                    text        = "v = " + str(int(body.velocity.l())) + "m/s"
+                    v           = self.fonts["names"].render((text), 1, (240, 240, 240))
+                    pos_text    = [end[0] - 10, end[1] - 50]
 
                     pygame.draw.line(self.screen, self.colors["white"], pos, end)
                     pygame.draw.circle(self.screen, self.colors["white"], end, 1)
-                    self.screen.blit(v, pos)
+                    self.screen.blit(v, pos_text)
 
 
         pygame.display.flip()

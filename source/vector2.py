@@ -65,6 +65,9 @@ class Vector2:
     #</operations>
 
 
+    def distance(self, v2):
+        return Vector2(self.x - v2.x, self.y - v2.y, self.z - v2.z).length()
+
     def tl(self):
         return [self.x, self.y]
 

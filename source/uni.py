@@ -44,11 +44,11 @@ class Uni:
         else:
             return False
 
-    def getDate(self):
-        if self.datatime != "N/A":
-            return time.asctime(time.localtime(self.datatime + self.time))
+    def getDate(self, dt=0):
+        if self.datatime != "N/A" and not isinstance(dt, str):
+            return time.asctime(time.localtime(self.datatime + self.time + dt))
         else:
-            return "When did I start?" + str(random.random())
+            return "unknown"
 
     def desc (self):
         """Describes the universe (in a dictionary format) so that it can be saved to a JSON file."""

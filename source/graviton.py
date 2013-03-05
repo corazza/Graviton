@@ -8,8 +8,9 @@ import event as gevent
 import util
 from body import *
 
-import user #For user scripts.
+sys.path.append("/home/bane/Projects/Graviton/userdata/")
 
+import user #For user scripts.
 
 #./graviton solar_system -s x -r 60 -tu y -cdt z -fe -min
 
@@ -25,6 +26,7 @@ alt_name            = -1 #Save the simulation in an alternative file, without mo
 dir_name            = -1 #Save the simulation in a different file each time.
 save_sim_each       = 0 #Save the simulation each x updates, 0 = no automatic saving, 1 = save each update.
 report_each         = 0 #Report some state each x real time seconds.
+interrupt_each      = 0 #Interrupt the user module each x simulated seconds.
 orbit_resolution    = 0 #Update orbits each x real time seconds.
 orbit_buffer        = 0 #Keep orbit edge positions in memory for x simulated seconds.
 
@@ -81,6 +83,12 @@ for i in range(len(sys.argv)):
             "-tu ignored, -tr already set."
         else:
             raise Exception("Parameter for '-t' not given! It must be a float following '-t', eg. '-t 200000.2432'.")
+
+    if arg == "-i":
+        if i + 1 < len(sys.argv) and not found_tr:
+            interrupt_each = float(sys.argv[i+1])
+        else:
+            raise Exception("Parameter for '-i' not given! It must be a float following '-i', eg. '-t 3600.0'.")
 
     if arg == "-tr":
         if i + 1 < len(sys.argv) and not found_tu:
@@ -231,6 +239,7 @@ if not mini:
 run = True
 last_saved = 0 #How many updates went by since the last save?
 last_reported = 0 #How many real time seconds went by since the last save?
+last_interrupted = 0
 last_render = 0
 last_take_pos = 0
 
@@ -322,8 +331,12 @@ if not mini:
 
 #<functions>
 
-last_report_percentstamp    = -1
-last_report_timestamp       = -1
+last_report_percentstamp    = 0
+last_report_timestamp       = time.time()
+
+consider_stamps = 10
+percent_since_last_report_l  = []
+seconds_since_last_report_l     = []
 
 def report(arg):
     global last_report_percentstamp
@@ -363,13 +376,36 @@ def report(arg):
         eta_s       = ""
 
         if percent != 0 and lasted != 0:
-            seconds_since_last_report = time.time() - last_report_timestamp
-            percent_since_last_report = percent - last_report_percentstamp
+            seconds_since_last_report   = time.time() - last_report_timestamp
+            percent_since_last_report   = percent - last_report_percentstamp
+            last_report_timestamp = time.time()
+            last_report_percentstamp = percent
+            remaining_percent           = 100 - percent
 
-            remaining_percent   = 100 - percent
-            percent_per_second  = percent_since_last_report/seconds_since_last_report
+            percent_since_last_report_l.append(percent_since_last_report)
+            seconds_since_last_report_l.append(seconds_since_last_report)
 
-            seconds = int(remaining_percent / percent_per_second)
+            if len(percent_since_last_report_l) > consider_stamps:
+                percent_since_last_report_l.pop(0)
+
+            if len(seconds_since_last_report_l) > consider_stamps:
+                seconds_since_last_report_l.pop(0)
+
+            avg_percent = 0.0
+            avg_seconds = 0.0
+
+            for percent in percent_since_last_report_l:
+                avg_percent += percent
+
+            for seconds in seconds_since_last_report_l:
+                avg_seconds += seconds
+
+            avg_percent /= len(percent_since_last_report_l)
+            avg_seconds /= len(seconds_since_last_report_l)
+
+            percent_per_second  = avg_percent/avg_seconds
+
+            seconds = int(math.ceil(remaining_percent / percent_per_second))
 
             years   = seconds/60/60/24/365
             seconds -= years*365*24*60*60
@@ -391,9 +427,6 @@ def report(arg):
         else:
             eta_s += "unknown"
 
-        last_report_timestamp = time.time()
-        last_report_percentstamp = percent
-
     else:
         eta_s       = "unknown"
         percent_s   = "unknown"
@@ -407,7 +440,8 @@ def report(arg):
 
     settings += time_setting
 
-    user.report(uni, time.asctime(time.localtime(start)), percent_s, eta_s, has_been_running_real, has_been_running_univ, will_be_running_s, settings)
+    if hasattr(user, "report"):
+        user.report(uni, time.asctime(time.localtime(start)), percent_s, eta_s, has_been_running_real, has_been_running_univ, will_be_running_s, settings)
 
 
 
@@ -542,10 +576,14 @@ def save(arg):
 gevent.sub("save", save)
 gevent.sub("report", report)
 
-for event in user.events:
-    for handler in user.events[event]:
-        gevent.sub(event, handler)
+if hasattr(user, "end_handler"):
+    gevent.sub("end", user.end_handler)
 
+if hasattr(user, "update_handler"):
+    gevent.sub("update_done", user.update_handler)
+
+if hasattr(user, "interrupt_handler"):
+    gevent.sub("interrupt", user.interrupt_handler)
 #</events>
 
 
@@ -606,6 +644,13 @@ while run:
         if last_reported >= report_each:
             last_reported = 0
             gevent.pub("report", None)
+
+    if interrupt_each > 0:
+        last_interrupted += dtu
+
+        if last_interrupted >= interrupt_each:
+            last_interrupted = 0
+            gevent.pub("interrupt", uni)
 
     if runForU > -1:
         if runForU <= uni.time:
