@@ -54,11 +54,21 @@ def interrupt_handler(uni):
     global earth_info
 
     earth       = uni.bodies["earth"]
-    sun         = uni.bodies["sun"]
 
-    earth_info += str(earth.position.x) + ' ' + str(earth.position.y) + ' ' + str(earth.position.z) + '\n'
+    earth_info += str(earth.position.x) + ', ' + str(earth.position.y) + ', ' + str(earth.position.z) + " at date " + uni.getDate() + '\n'
+
+def get_apophis_info(uni):
+    ap = uni.bodies["apo"]
+    return str(ap.position.x) + ', ' + str(ap.position.y) + ', ' + str(ap.position.z) + " at date " + uni.getDate() + '\n'
+
+def get_earth_info(uni):
+    earth = uni.bodies["earth"]
+    return str(earth.position.x) + ', ' + str(earth.position.y) + ', ' + str(earth.position.z) + " at date " + uni.getDate() + '\n'
 
 def end_handler(uni):
-    user_data = open("userdata/distances.txt", "w")
-    user_data.write(earth_info)
+    apophis_info = get_apophis_info(uni)
+    earth_info = get_earth_info(uni)
+    info = "Earth:\n" + earth_info + "\n\nApophis:\n" + apophis_info
+    user_data = open("userdata/data.txt", "w")
+    user_data.write(info)
     user_data.close()

@@ -1,5 +1,4 @@
 import math
-from decimal import *
 
 class Vector2:
     def __init__(self, x = 0, y = 0, z = 0):
@@ -76,6 +75,14 @@ class Vector2:
 
     def length(self):
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
+    def angle(self):
+        angle = math.atan2(self.x, self.y) / (math.pi*2) * 360
+
+        if angle < 0:
+            angle += 360 + angle
+
+        return angle
 
     #legacy:
     def l(self):
