@@ -1,15 +1,24 @@
 Graviton
 ========
 
-Gravity simulator in Python.
+Gravity simulator in Python. Created using [Pygame](http://pygame.org) for the front end.
 
-## Links
+![Orbit visualizations (Solar system)](http://jancorazza.com/wordpress/wp-content/uploads/2013/03/orbits_regular-1024x565.png)
+
+**Features:**
+
+1. Fourth order Runge-Kutta integrator
+2. 3D geometry
+3. Minimal mode with no graphics
+4. Orbit and vector visualization
+5. Reports (ETA calculation, important dates, timers, extensible via the user module)
+6. An event system, where the user may override various event handlers for information extraction and custom reports
+
+**Links:**
 
 1. Posts about Graviton: [jancorazza.com/category/projects/graviton/](http://jancorazza.com/category/projects/graviton/).
 2. This post sums up the features and the results I got from some simulations: [jancorazza.com/2013/03/graviton-has-been-finished/](http://jancorazza.com/2013/03/graviton-has-been-finished/).
 3. [HORIZONS tutorial](http://jancorazza.com/2012/11/horizons/)
-
-![Orbit visualizations (Solar system)](http://jancorazza.com/wordpress/wp-content/uploads/2013/03/orbits_regular-1024x565.png)
 
 ## Running
 
