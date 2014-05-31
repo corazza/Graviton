@@ -3,8 +3,11 @@ Graviton
 
 Gravity simulator in Python.
 
-I've written about creating this application on my website: [jancorazza.com/category/projects/graviton/](http://jancorazza.com/category/projects/graviton/).  
-This post sums up the features and the results I got from some simulations: [jancorazza.com/2013/03/graviton-has-been-finished/](http://jancorazza.com/2013/03/graviton-has-been-finished/).
+## Links
+
+1. Posts about Graviton: [jancorazza.com/category/projects/graviton/](http://jancorazza.com/category/projects/graviton/).
+2. This post sums up the features and the results I got from some simulations: [jancorazza.com/2013/03/graviton-has-been-finished/](http://jancorazza.com/2013/03/graviton-has-been-finished/).
+3. [HORIZONS tutorial](http://jancorazza.com/2012/11/horizons/)
 
 ![Orbit visualizations (Solar system)](http://jancorazza.com/wordpress/wp-content/uploads/2013/03/orbits_regular-1024x565.png)
 
