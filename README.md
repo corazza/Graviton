@@ -3,7 +3,7 @@ Graviton
 
 Gravity simulator in Python. Created using [Pygame](http://pygame.org) for the front end.
 
-![Orbit visualizations (Solar system)](http://jancorazza.com/wordpress/wp-content/uploads/2013/03/orbits_regular-1024x565.png)
+![Orbit visualizations (Solar system)](http://res.cloudinary.com/dhngozzmz/image/upload/v1443286118/orbits_regular_eix6lz.png)
 
 **Features:**
 
