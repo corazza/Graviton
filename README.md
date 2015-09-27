@@ -16,9 +16,9 @@ Gravity simulator in Python. Created using [Pygame](http://pygame.org) for the f
 
 **Links:**
 
-1. Posts about Graviton: [jancorazza.com/category/projects/graviton/](http://jancorazza.com/category/projects/graviton/).
-2. This post sums up the features and the results I got from some simulations: [jancorazza.com/2013/03/graviton-has-been-finished/](http://jancorazza.com/2013/03/graviton-has-been-finished/).
-3. [HORIZONS tutorial](http://jancorazza.com/2012/11/horizons/)
+1. Posts about Graviton: [jancorazza.com/tag/graviton/](http://jancorazza.com/tag/graviton/).
+2. This post sums up the features and the results I got from some simulations: [jancorazza.com/2013/03/24/graviton-has-been-finished/](http://jancorazza.com/2013/03/24/graviton-has-been-finished/).
+3. [HORIZONS tutorial](http://jancorazza.com/2012/11/19/horizons/)
 
 ## Running
 
